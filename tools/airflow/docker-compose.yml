@@ -1,0 +1,40 @@
+version: '3'
+services:
+  airflow-webserver:
+    image: apache/airflow:2.7.0
+    container_name: airflow-webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY} # Make sure to add a Fernet key or create it in environment
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+    entrypoint: >
+      /bin/bash -c
+      "airflow db init &&
+      airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin &&
+      airflow webserver"
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.0
+    container_name: airflow-scheduler
+    depends_on:
+      - airflow-webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+    volumes:
+      - ./dags:/opt/airflow/dags
+    entrypoint: airflow scheduler
+
+  airflow-init:
+    image: apache/airflow:2.7.0
+    container_name: airflow-init
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+    entrypoint: airflow db init
+    volumes:
+      - ./dags:/opt/airflow/dags
