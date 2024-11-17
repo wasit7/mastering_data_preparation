@@ -1,3 +1,9 @@
+exam_ocr/
+dataset/
+data/
+cropped_boxes/
+_draft/
+img/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
